@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Utilidades locales
+generate-og.html
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -15,7 +15,7 @@ export const questions = [
       opciones: [
         { texto: "Blogs y foros. Siempre ha funcionado", era: "2006-2008" },
         { texto: "Me la recomienda gente de confianza", era: "2009-2012" },
-        { texto: "Algorithmo de Spotify, tampoco me avergüenza", era: "2013-2016" },
+        { texto: "Algoritmo de Spotify, tampoco me avergüenza", era: "2013-2016" },
         { texto: "TikTok, aunque luego lo niegue", era: "2021-2025" }
       ]
     },
@@ -26,7 +26,7 @@ export const questions = [
         { texto: "Sala pequeña, sudor, y el artista a dos metros", era: "2006-2008" },
         { texto: "Festival con buenos horarios y sin solapamientos", era: "2009-2012" },
         { texto: "Sentado, con buena acústica y sin que nadie grabe con el móvil", era: "2013-2016" },
-        { texto: "Cualquiera, mientras el setlist tenga las canciones del último disco", era: "2017-2020" }
+        { texto: "Cualquiera, siempre que pongan el disco nuevo entero y en orden", era: "2017-2020" }
       ]
     },
     {
@@ -63,7 +63,7 @@ export const questions = [
       id: 7,
       pregunta: "Cuando un artista que era underground se hace masivo...",
       opciones: [
-        { texto: "Me alegro, se lo merecen", era: "2017-2020" },
+        { texto: "Me alegro. Ojalá les vaya bien, en serio", era: "2017-2020" },
         { texto: "Me genera sentimientos encontrados, no voy a mentir", era: "2006-2008" },
         { texto: "Depende del artista y de lo que hayan sacrificado para llegar", era: "2009-2012" },
         { texto: "Ya da igual, la industria funciona así", era: "2021-2025" }
@@ -97,6 +97,16 @@ export const questions = [
         { texto: "Donde confirmo si un disco merece la pena", era: "2009-2012" },
         { texto: "Una de las pocas webs musicales que todavía leo", era: "2013-2016" },
         { texto: "Lo acabo de descubrir, pero pinta bien", era: "2021-2025" }
+      ]
+    },
+    {
+      id: 11,
+      pregunta: "Hay un silencio incómodo y tú controlas la música. ¿Qué haces?",
+      opciones: [
+        { texto: "Tengo la playlist perfecta para cada situación", era: "2006-2008" },
+        { texto: "Pongo algo que sé que va a gustar a todos", era: "2009-2012" },
+        { texto: "Conecto el Bluetooth sin pedir permiso", era: "2017-2020" },
+        { texto: "Le digo al asistente de voz que ponga algo y a ver qué pasa", era: "2021-2025" }
       ]
     }
   ]

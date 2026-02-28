@@ -8,28 +8,28 @@ export const profiles = {
   },
   "2009-2012": {
     era: "2009–2012",
-    titulo: "Eres de la edad dorada del indie",
+    titulo: "Eres de cuando el indie todavía molaba sin complejos",
     descripcion: "El indie español despegaba, Spotify llegaba, y todo parecía posible. Viviste el momento en que la música de nicho se hizo mainstream sin perder la gracia.",
     discos: ["Vampire Weekend – Contra", "Beach House – Teen Dream", "James Blake – James Blake"],
     color: "#1a9af4"
   },
   "2013-2016": {
     era: "2013–2016",
-    titulo: "Eres de la era de la fragmentación",
+    titulo: "Eres de cuando Spotify empezó a arruinar tu concentración",
     descripcion: "Demasiado donde escuchar, demasiado poco tiempo. El streaming cambió las reglas y tú lo viviste en primera fila, con playlist infinitas y crisis de identidad musical.",
     discos: ["Kendrick Lamar – To Pimp a Butterfly", "FKA twigs – LP1", "Sufjan Stevens – Carrie & Lowell"],
     color: "#c7003b"
   },
   "2017-2020": {
     era: "2017–2020",
-    titulo: "Eres de la era del pop sin complejos",
+    titulo: "Eres de cuando el pop volvió a ser cool y nadie lo negó",
     descripcion: "El pop volvió a ser cool sin pedir perdón. Billie, Rosalía, Charli XCX. Y luego llegó la pandemia y cambió todo otra vez.",
     discos: ["Rosalía – El Mal Querer", "Billie Eilish – When We All Fall Asleep", "Phoebe Bridgers – Punisher"],
     color: "#0d7fd4"
   },
   "2021-2025": {
     era: "2021–2025",
-    titulo: "Eres del presente",
+    titulo: "Eres de ahora, para bien y para mal",
     descripcion: "Vives en la era de la sobreabundancia musical con una calma pasmosa. Lo descubres todo en TikTok pero lo escuchas en vinilo. Eres contradictorio y está bien.",
     discos: ["Wet Leg – Wet Leg", "Caroline Polachek – Desire, I Want to Turn Into You", "Beyoncé – Renaissance"],
     color: "#f72f65"

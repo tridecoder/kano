@@ -1,8 +1,15 @@
+import { useState, useEffect } from 'react'
 import ShareCard from './ShareCard'
 
-function Result({ resultado, onReiniciar }) {
+function Result({ resultado, breakdown, onReiniciar }) {
+  const [barrasAnimadas, setBarrasAnimadas] = useState(false)
   const url = window.location.href
   const texto = `Soy del ${resultado.era} de jenesaispop. ${resultado.titulo}. ¿Y tú? 🎵`
+
+  useEffect(() => {
+    const t = setTimeout(() => setBarrasAnimadas(true), 100)
+    return () => clearTimeout(t)
+  }, [])
 
   async function handleCompartirNativo() {
     try {
@@ -37,6 +44,31 @@ function Result({ resultado, onReiniciar }) {
       </div>
 
       <p className="result__descripcion">{resultado.descripcion}</p>
+
+      {breakdown && (
+        <div className="result__breakdown">
+          <p className="result__breakdown-titulo">Cómo te repartes</p>
+          <ul className="breakdown__lista">
+            {breakdown.map((item) => (
+              <li key={item.key} className="breakdown__item">
+                <div className="breakdown__cabecera">
+                  <span className="breakdown__era">{item.era}</span>
+                  <span className="breakdown__porcentaje">{item.porcentaje}%</span>
+                </div>
+                <div className="breakdown__barra-wrap">
+                  <div
+                    className="breakdown__barra-fill"
+                    style={{
+                      backgroundColor: item.color,
+                      width: barrasAnimadas ? `${item.porcentaje}%` : '0%',
+                    }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <p className="result__discos-titulo">Los discos de tu era</p>
       <ul className="result__discos">

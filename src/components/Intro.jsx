@@ -4,7 +4,7 @@ function Intro({ onEmpezar }) {
       <span className="intro__tag">20 años de jenesaispop</span>
       <h1>¿De qué <em>año</em> eres?</h1>
       <p className="intro__bajada">
-        Dos décadas de música, criterio y comunidad. Descubre en qué época de jenesaispop encaja tu forma de escuchar.
+        Veinte años de discazos, hypes que no llegaron a nada y alguna que otra pifia memorable. ¿Con qué época te quedas?
       </p>
       <button className="btn-primario" onClick={onEmpezar}>Descúbrelo</button>
     </div>

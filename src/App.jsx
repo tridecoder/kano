@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { questions } from './data/questions'
 import { profiles } from './data/profiles'
 import Intro from './components/Intro'
 import Quiz from './components/Quiz'
+import Analizando from './components/Analizando'
 import Result from './components/Result'
 import './App.css'
 
@@ -26,11 +27,40 @@ function calcularResultado(respuestas) {
   }
 }
 
+function calcularBreakdown(respuestas) {
+  const puntos = {}
+  respuestas.forEach((era) => {
+    puntos[era] = (puntos[era] || 0) + 1
+  })
+
+  return Object.entries(profiles)
+    .map(([key, profile]) => ({
+      key,
+      era: profile.era,
+      color: profile.color,
+      porcentaje: Math.round(((puntos[key] || 0) / respuestas.length) * 100),
+    }))
+    .sort((a, b) => b.porcentaje - a.porcentaje)
+}
+
 function App() {
+  const preguntasBarajadas = useMemo(() => {
+    function shuffle(arr) {
+      const result = [...arr]
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[result[i], result[j]] = [result[j], result[i]]
+      }
+      return result
+    }
+    return questions.map(q => ({ ...q, opciones: shuffle(q.opciones) }))
+  }, [])
+
   const [pantalla, setPantalla] = useState('intro')
   const [visible, setVisible] = useState(true)
   const [respuestas, setRespuestas] = useState([])
   const [resultado, setResultado] = useState(null)
+  const [breakdown, setBreakdown] = useState(null)
 
   const cambiarPantalla = useCallback((siguiente) => {
     setVisible(false)
@@ -48,16 +78,22 @@ function App() {
     const nuevasRespuestas = [...respuestas, era]
     setRespuestas(nuevasRespuestas)
 
-    if (nuevasRespuestas.length === questions.length) {
+    if (nuevasRespuestas.length === preguntasBarajadas.length) {
       const eraGanadora = calcularResultado(nuevasRespuestas)
       setResultado(profiles[eraGanadora])
-      cambiarPantalla('result')
+      setBreakdown(calcularBreakdown(nuevasRespuestas))
+      cambiarPantalla('analizando')
     }
   }
+
+  const handleAnalizandoListo = useCallback(() => {
+    cambiarPantalla('result')
+  }, [cambiarPantalla])
 
   function handleReiniciar() {
     setRespuestas([])
     setResultado(null)
+    setBreakdown(null)
     cambiarPantalla('intro')
   }
 
@@ -69,13 +105,16 @@ function App() {
         )}
         {pantalla === 'quiz' && (
           <Quiz
-            questions={questions}
+            questions={preguntasBarajadas}
             respuestaActual={respuestas.length}
             onResponder={handleResponder}
           />
         )}
+        {pantalla === 'analizando' && (
+          <Analizando onListo={handleAnalizandoListo} />
+        )}
         {pantalla === 'result' && resultado && (
-          <Result resultado={resultado} onReiniciar={handleReiniciar} />
+          <Result resultado={resultado} breakdown={breakdown} onReiniciar={handleReiniciar} />
         )}
       </div>
     </div>

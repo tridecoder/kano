@@ -30,7 +30,7 @@ kano/
 │   │   ├── Intro.jsx      # Pantalla de inicio
 │   │   ├── Quiz.jsx       # Preguntas y opciones
 │   │   ├── Analizando.jsx # Pantalla intermedia de suspense entre quiz y resultado
-│   │   ├── Result.jsx     # Resultado + breakdown + botones de compartir
+│   │   ├── Result.jsx     # Resultado + botones de compartir
 │   │   └── ShareCard.jsx  # Card visual + generación de imagen para Instagram
 │   └── data/
 │       ├── questions.js  # 11 preguntas, 4 opciones cada una
@@ -51,7 +51,6 @@ const [pantalla, setPantalla]     // 'intro' | 'quiz' | 'analizando' | 'result'
 const [visible, setVisible]       // controla la animación de transición
 const [respuestas, setRespuestas] // array de era keys según el usuario responde
 const [resultado, setResultado]   // objeto del perfil ganador (de profiles.js)
-const [breakdown, setBreakdown]   // array de eras ordenadas por % para el gráfico
 ```
 
 ### Barajado de opciones
@@ -81,9 +80,9 @@ Al Quiz se le pasa `preguntasBarajadas`, no `questions` directamente.
 1. `setVisible(false)` → pantalla actual hace fade out (280ms)
 2. Después de 280ms: `setPantalla(siguiente)` + `setVisible(true)` → nueva pantalla hace fade in
 
-**Flujo al terminar el quiz:** `setResultado` + `setBreakdown` se llaman inmediatamente, luego `cambiarPantalla('analizando')`. La pantalla de análisis espera ~1.8s y llama a `onListo` → `cambiarPantalla('result')`.
+**Flujo al terminar el quiz:** `setResultado` se llama inmediatamente, luego `cambiarPantalla('analizando')`. La pantalla de análisis espera ~1.8s y llama a `onListo` → `cambiarPantalla('result')`.
 
-**Regla crítica:** `setResultado` y `setBreakdown` deben llamarse **antes** de `cambiarPantalla`, nunca dentro del setTimeout:
+**Regla crítica:** `setResultado` debe llamarse **antes** de `cambiarPantalla`, nunca dentro del setTimeout:
 
 ```jsx
 // ✅ Correcto
@@ -202,19 +201,6 @@ Pantalla intermedia que aparece entre el quiz y el resultado para crear suspense
 - Barra roja con animación `barraAnalizando` en bucle (ancho 40px ↔ 140px)
 - Al terminar llama a `onListo` → `cambiarPantalla('result')`
 - `useEffect` con deps `[]` — correcto porque `onListo` es estable (`useCallback` en App.jsx)
-
-## Breakdown de eras (Result.jsx)
-
-Sección "Cómo te repartes" que muestra la distribución de todas las respuestas.
-
-**Estructura del array `breakdown`** (calculado en `calcularBreakdown` de App.jsx):
-```js
-[{ key, era, color, porcentaje }]  // ordenado de mayor a menor porcentaje
-```
-
-**Animación de barras:** `barrasAnimadas` state arranca en `false`, se pone a `true` tras 100ms con `setTimeout`. Las barras tienen `transition: width 0.8s ease` en CSS, así que pasan de `0%` al porcentaje real con animación suave.
-
----
 
 ## Compartir imagen (ShareCard.jsx)
 

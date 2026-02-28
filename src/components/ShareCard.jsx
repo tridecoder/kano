@@ -1,9 +1,8 @@
-const LOGO_URL = 'https://jenesaispop.com/wp-content/uploads/2021/02/jnsp-540-retina.png'
+const LOGO_URL = '/logo.png'
 
 function cargarLogo() {
   return new Promise((resolve) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
     img.onload = () => resolve(img)
     img.onerror = () => resolve(null)
     img.src = LOGO_URL
@@ -28,7 +27,11 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   return currentY
 }
 
+import { useState } from 'react'
+
 function ShareCard({ resultado }) {
+  const [generando, setGenerando] = useState(false)
+
   async function generarCanvas() {
     await document.fonts.ready
     const logo = await cargarLogo()
@@ -86,19 +89,24 @@ function ShareCard({ resultado }) {
   }
 
   async function handleCompartir() {
-    const canvas = await generarCanvas()
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
-    const file = new File([blob], `jenesaispop-${resultado.era}.png`, { type: 'image/png' })
+    setGenerando(true)
+    try {
+      const canvas = await generarCanvas()
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+      const file = new File([blob], `jenesaispop-${resultado.era}.png`, { type: 'image/png' })
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: '¿De qué año eres? — jenesaispop' })
-    } else {
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.download = `jenesaispop-${resultado.era}.png`
-      link.href = url
-      link.click()
-      URL.revokeObjectURL(url)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: '¿De qué año eres? — jenesaispop' })
+      } else {
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.download = `jenesaispop-${resultado.era}.png`
+        link.href = url
+        link.click()
+        URL.revokeObjectURL(url)
+      }
+    } finally {
+      setGenerando(false)
     }
   }
 
@@ -120,8 +128,8 @@ function ShareCard({ resultado }) {
           <span className="sharecard__url">jenesaispop.com</span>
         </div>
       </div>
-      <button className="btn-descargar" onClick={handleCompartir}>
-        Compartir imagen
+      <button className="btn-descargar" onClick={handleCompartir} disabled={generando}>
+        {generando ? 'Generando imagen...' : 'Compartir imagen'}
       </button>
     </div>
   )

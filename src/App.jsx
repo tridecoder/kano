@@ -11,7 +11,18 @@ function calcularResultado(respuestas) {
   respuestas.forEach((era) => {
     puntos[era] = (puntos[era] || 0) + 1
   })
-  return Object.entries(puntos).sort((a, b) => b[1] - a[1])[0][0]
+
+  const maxPuntos = Math.max(...Object.values(puntos))
+  const empates = Object.entries(puntos)
+    .filter(([, v]) => v === maxPuntos)
+    .map(([k]) => k)
+
+  if (empates.length === 1) return empates[0]
+
+  // En caso de empate, gana la era del último voto emitido
+  for (let i = respuestas.length - 1; i >= 0; i--) {
+    if (empates.includes(respuestas[i])) return respuestas[i]
+  }
 }
 
 function App() {

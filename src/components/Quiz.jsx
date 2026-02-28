@@ -20,17 +20,20 @@ function Quiz({ questions, respuestaActual, onResponder }) {
           <span className="quiz__de">Pregunta {respuestaActual + 1} de {questions.length}</span>
         </div>
       </div>
-      <h2>{pregunta.pregunta}</h2>
-      <ul className="quiz__opciones">
-        {pregunta.opciones.map((opcion, i) => (
-          <li key={i}>
-            <button className="quiz__opcion" onClick={() => onResponder(opcion.era)}>
-              <span className="quiz__letra">{LETRAS[i]}</span>
-              {opcion.texto}
-            </button>
-          </li>
-        ))}
-      </ul>
+
+      <div className="quiz__contenido" key={respuestaActual}>
+        <h2>{pregunta.pregunta}</h2>
+        <ul className="quiz__opciones">
+          {pregunta.opciones.map((opcion, i) => (
+            <li key={i}>
+              <button className="quiz__opcion" onClick={() => onResponder(opcion.era)}>
+                <span className="quiz__letra">{LETRAS[i]}</span>
+                {opcion.texto}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }

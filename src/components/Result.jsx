@@ -70,6 +70,14 @@ function Result({ resultado, onReiniciar }) {
       </div>
 
       <div className="result__acciones">
+        <a
+          href="https://jenesaispop.com/foros"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-foros"
+        >
+          Coméntalo en los foros
+        </a>
         <button className="btn-repetir" onClick={onReiniciar}>Repetir el test</button>
       </div>
     </div>

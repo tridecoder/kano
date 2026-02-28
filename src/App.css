@@ -541,6 +541,25 @@
   margin-top: 24px;
 }
 
+.btn-foros {
+  display: inline-block;
+  background-color: var(--azul);
+  color: var(--blanco);
+  font-family: 'PT Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 14px 32px;
+  border: none;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.btn-foros:hover {
+  background-color: #0f7fd4;
+}
+
 .btn-repetir {
   display: inline-block;
   background-color: transparent;

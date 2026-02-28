@@ -5,11 +5,13 @@ alwaysApply: true
 
 # kano — ¿De qué año eres?
 
-Quiz interactivo para el 20 aniversario de jenesaispop.com. El usuario responde 10 preguntas sobre actitudes y hábitos musicales y obtiene el perfil de la era de jenesaispop con la que más encaja.
+Quiz interactivo para el 20 aniversario de jenesaispop.com. El usuario responde 11 preguntas sobre actitudes y hábitos musicales y obtiene el perfil de la era de jenesaispop con la que más encaja.
 
 **Stack:** React 18 + Vite · Sin dependencias adicionales · Desplegado en Vercel
-**URL destino:** `test.jenesaispop.com` (pendiente DNS) — por ahora en `kano-black.vercel.app`
-**Integración:** Se embebe en jenesaispop.com mediante `<iframe>` con postMessage para ajustar altura
+**URL destino:** `test.jenesaispop.com` (pendiente DNS en Linode) — por ahora `kano-black.vercel.app`
+**Repo:** github.com/tridecoder/kano
+**Deploy:** auto-deploy en Vercel en cada push a `main`
+**Integración futura:** iframe en jenesaispop.com con postMessage para ajustar altura
 
 ---
 
@@ -25,12 +27,13 @@ kano/
 │   ├── App.css           # Todos los estilos del proyecto
 │   ├── index.css         # Variables CSS + reset + fuentes
 │   ├── components/
-│   │   ├── Intro.jsx     # Pantalla de inicio
-│   │   ├── Quiz.jsx      # Preguntas y opciones
-│   │   ├── Result.jsx    # Resultado + botones de compartir
-│   │   └── ShareCard.jsx # Card visual + generación de imagen para Instagram
+│   │   ├── Intro.jsx      # Pantalla de inicio
+│   │   ├── Quiz.jsx       # Preguntas y opciones
+│   │   ├── Analizando.jsx # Pantalla intermedia de suspense entre quiz y resultado
+│   │   ├── Result.jsx     # Resultado + breakdown + botones de compartir
+│   │   └── ShareCard.jsx  # Card visual + generación de imagen para Instagram
 │   └── data/
-│       ├── questions.js  # 10 preguntas, 4 opciones cada una
+│       ├── questions.js  # 11 preguntas, 4 opciones cada una
 │       └── profiles.js   # 5 perfiles de era con color, título, descripción y discos
 ├── index.html            # Meta OG, Twitter Card, favicon
 └── generate-og.html      # Utilidad local para generar og.png (excluida de git)
@@ -43,20 +46,44 @@ kano/
 El estado vive enteramente en `App.jsx`. No hay contexto global ni librería de estado.
 
 ```js
-const [pantalla, setPantalla]   // 'intro' | 'quiz' | 'result'
-const [visible, setVisible]     // controla la animación de transición
+const preguntasBarajadas          // useMemo: opciones barajadas con Fisher-Yates al montar
+const [pantalla, setPantalla]     // 'intro' | 'quiz' | 'analizando' | 'result'
+const [visible, setVisible]       // controla la animación de transición
 const [respuestas, setRespuestas] // array de era keys según el usuario responde
 const [resultado, setResultado]   // objeto del perfil ganador (de profiles.js)
+const [breakdown, setBreakdown]   // array de eras ordenadas por % para el gráfico
 ```
+
+### Barajado de opciones
+
+Las opciones de cada pregunta se barajan una vez al montar la app con **Fisher-Yates** (no usar `.sort(() => Math.random() - 0.5)` — no es verdaderamente aleatorio):
+
+```js
+const preguntasBarajadas = useMemo(() => {
+  function shuffle(arr) {
+    const result = [...arr]
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[result[i], result[j]] = [result[j], result[i]]
+    }
+    return result
+  }
+  return questions.map(q => ({ ...q, opciones: shuffle(q.opciones) }))
+}, [])
+```
+
+Al Quiz se le pasa `preguntasBarajadas`, no `questions` directamente.
 
 ### Transiciones entre pantallas
 
 `cambiarPantalla(siguiente)` gestiona el fade out/in:
 
-1. `setVisible(false)` → la pantalla actual hace fade out (280ms)
+1. `setVisible(false)` → pantalla actual hace fade out (280ms)
 2. Después de 280ms: `setPantalla(siguiente)` + `setVisible(true)` → nueva pantalla hace fade in
 
-**Regla crítica:** `setResultado` debe llamarse **antes** de `cambiarPantalla('result')`, nunca dentro del setTimeout. React 18 batea los state updates del mismo evento, y si `resultado` no está ya seteado cuando el timeout ejecuta, la pantalla de resultado aparece en blanco.
+**Flujo al terminar el quiz:** `setResultado` + `setBreakdown` se llaman inmediatamente, luego `cambiarPantalla('analizando')`. La pantalla de análisis espera ~1.8s y llama a `onListo` → `cambiarPantalla('result')`.
+
+**Regla crítica:** `setResultado` y `setBreakdown` deben llamarse **antes** de `cambiarPantalla`, nunca dentro del setTimeout:
 
 ```jsx
 // ✅ Correcto
@@ -69,7 +96,7 @@ cambiarPantalla('result', () => setResultado(...))
 
 ### Guard en Quiz.jsx
 
-Durante los 280ms de fade out tras la última respuesta, `pantalla` sigue siendo `'quiz'` pero `respuestas.length` ya es 10. Sin el guard, `questions[10]` es undefined y peta:
+Durante los 280ms de fade out tras la última respuesta, `pantalla` sigue siendo `'quiz'` pero `respuestas.length` ya es 11. Sin el guard, `questions[11]` es undefined y peta:
 
 ```jsx
 const pregunta = questions[respuestaActual]
@@ -92,19 +119,25 @@ if (!pregunta) return null  // ← necesario, no borrar
 }
 ```
 
-Hay exactamente **10 preguntas** con **4 opciones** cada una. Las preguntas son de actitud, no de trivia musical. Cada opción apunta a una de las 5 eras.
+- 11 preguntas con 4 opciones cada una
+- Las preguntas son de actitud, no de trivia musical
+- Cada opción mapea a una de las 5 eras (no todas las eras aparecen en cada pregunta)
+- El orden de las opciones en el archivo no importa — se barajan al cargar con Fisher-Yates
+
+**Distribución de eras por preguntas:**
+- `2006-2008`: 11 · `2009-2012`: 11 · `2013-2016`: 8 · `2017-2020`: 6 · `2021-2025`: 8
 
 ### profiles.js
 
-Keys del objeto: `"2006-2008"` · `"2009-2012"` · `"2013-2016"` · `"2017-2020"` · `"2021-2025"`
+Keys: `"2006-2008"` · `"2009-2012"` · `"2013-2016"` · `"2017-2020"` · `"2021-2025"`
 
 ```js
 "2006-2008": {
-  era: String,          // "2006–2008" (con guión largo para display)
-  titulo: String,       // empieza siempre con "Eres ..."
+  era: String,          // "2006–2008" (guión largo para display)
+  titulo: String,       // empieza con "Eres ..."
   descripcion: String,
-  discos: String[],     // exactamente 3 discos
-  color: String         // hex, usado como fondo del header y la sharecard
+  discos: String[],     // 3 discos
+  color: String         // hex, fondo del header y sharecard
 }
 ```
 
@@ -117,7 +150,7 @@ Keys del objeto: `"2006-2008"` · `"2009-2012"` · `"2013-2016"` · `"2017-2020"
 
 ### Algoritmo de resultado
 
-Gana la era con más respuestas. En caso de empate, gana la era a la que se respondió más recientemente (última respuesta entre las empatadas).
+Gana la era con más respuestas. En empate, gana la era de la respuesta más reciente entre las empatadas.
 
 ---
 
@@ -126,12 +159,12 @@ Gana la era con más respuestas. En caso de empate, gana la era a la que se resp
 ### Variables CSS (`index.css`)
 
 ```css
---rojo:      #f10547
---azul:      #1a9af4
---negro:     #222222
---gris:      #eaeaea
+--rojo:       #f10547
+--azul:       #1a9af4
+--negro:      #222222
+--gris:       #eaeaea
 --gris-texto: #999
---blanco:    #ffffff
+--blanco:     #ffffff
 ```
 
 ### Fuentes
@@ -142,13 +175,13 @@ Gana la era con más respuestas. En caso de empate, gana la era a la que se resp
 ### Convenciones CSS
 
 - Un solo fichero `App.css` para todos los estilos. No hay CSS modules ni Tailwind.
-- Naming tipo BEM en español: `.quiz__cabecera`, `.result__header`, `.sharecard__titulo`
-- Las secciones están marcadas con comentarios: `/* ── INTRO ── */`, `/* ── QUIZ ── */`, etc.
-- Responsive sólo en `@media (max-width: 600px)` al final del fichero
+- Naming BEM en español: `.quiz__cabecera`, `.result__header`, `.sharecard__titulo`
+- Secciones marcadas con comentarios: `/* ── INTRO ── */`, `/* ── QUIZ ── */`, etc.
+- Responsive solo en `@media (max-width: 600px)` al final del fichero
 
 ### Botones de quiz
 
-Los 4 colores de opción se asignan por `nth-child` en CSS, no por clase:
+Los 4 colores de opción se asignan por `nth-child`, no por clase:
 
 ```css
 .quiz__opciones li:nth-child(1) .quiz__opcion { background-color: #f10547; }
@@ -159,56 +192,87 @@ Los 4 colores de opción se asignan por `nth-child` en CSS, no por clase:
 
 ---
 
-## Generación de Imagen (ShareCard)
+## Pantalla Analizando (Analizando.jsx)
 
-`ShareCard.jsx` genera una imagen 1080×1080 con Canvas API nativo (sin html2canvas ni dependencias externas).
+Pantalla intermedia que aparece entre el quiz y el resultado para crear suspense.
+
+- Duración: ~1.8s (3 mensajes × 600ms)
+- Mensajes rotativos: "Rebobinando la cinta...", "Consultando los archivos...", "Calculando tu era..."
+- Cada mensaje entra con animación `mensajeFade` (fade + slide up) gracias al `key={idx}` en el elemento
+- Barra roja con animación `barraAnalizando` en bucle (ancho 40px ↔ 140px)
+- Al terminar llama a `onListo` → `cambiarPantalla('result')`
+- `useEffect` con deps `[]` — correcto porque `onListo` es estable (`useCallback` en App.jsx)
+
+## Breakdown de eras (Result.jsx)
+
+Sección "Cómo te repartes" que muestra la distribución de todas las respuestas.
+
+**Estructura del array `breakdown`** (calculado en `calcularBreakdown` de App.jsx):
+```js
+[{ key, era, color, porcentaje }]  // ordenado de mayor a menor porcentaje
+```
+
+**Animación de barras:** `barrasAnimadas` state arranca en `false`, se pone a `true` tras 100ms con `setTimeout`. Las barras tienen `transition: width 0.8s ease` en CSS, así que pasan de `0%` al porcentaje real con animación suave.
+
+---
+
+## Compartir imagen (ShareCard.jsx)
+
+Genera una imagen 1080×1080 con Canvas API nativo (sin html2canvas).
 
 **Flujo:**
 1. `document.fonts.ready` — espera a que PT Sans esté cargada
-2. Carga `/logo.png` desde local (evita CORS — el servidor de jenesaispop no tiene cabeceras CORS)
-3. Dibuja: fondo de color de era → comilla decorativa → logo → era → título (con "Soy" en vez de "Eres") → descripción → URL
-4. En móvil con `navigator.canShare({ files })`: abre el share nativo (Instagram, WhatsApp, etc.)
-5. En desktop o si no hay share nativo: descarga el PNG directamente
+2. Carga `/logo.png` desde local (el servidor de jenesaispop no tiene cabeceras CORS)
+3. Dibuja: fondo de color de era → comilla decorativa → logo → era → título → descripción → URL
+4. El título cambia "Eres" → "Soy" (`resultado.titulo.replace(/^Eres/, 'Soy')`)
+5. En móvil con `navigator.canShare({ files })`: botón "Compartir imagen" → share nativo
+6. En desktop o sin soporte: botón "Descargar imagen" → descarga PNG
 
-**Importante:** El título en la imagen cambia "Eres" → "Soy" (`resultado.titulo.replace(/^Eres/, 'Soy')`).
+La detección de móvil usa `window.matchMedia('(max-width: 768px)')` con listener para cambios.
 
 ---
 
 ## Open Graph
 
-`index.html` tiene meta tags OG y Twitter Card apuntando a `https://test.jenesaispop.com/og.png`.
+`index.html` tiene meta OG y Twitter Card apuntando a `https://test.jenesaispop.com/og.png`.
 
-La imagen OG se genera con `generate-og.html` (utilidad local, excluida de git via `.gitignore`):
-- Abre `generate-og.html` en el browser con el servidor de desarrollo corriendo
-- Pulsa el botón para descargar `og.png`
-- Mueve el archivo a `public/og.png`
+Para regenerar `og.png`:
+1. Arrancar el servidor de desarrollo
+2. Abrir `generate-og.html` en el browser
+3. Pulsar el botón → descarga `og.png`
+4. Mover a `public/og.png`
 
 ---
 
-## Despliegue
+## Animaciones en la intro
 
-- **Repositorio:** GitHub (`kano`)
-- **Hosting:** Vercel (conectado al repo, auto-deploy en cada push a `main`)
-- **URL actual:** `kano-black.vercel.app`
-- **URL final:** `test.jenesaispop.com` (pendiente configurar CNAME en DNS de Linode)
+**La intro está sin animación por decisión activa de Sara.**
 
-Para hacer deploy: `git push origin main` → Vercel despliega automáticamente.
+Propuestas rechazadas:
+- ❌ Slot machine de años en el h1 + flash de colores de fondo → descartado
+- ❌ Contador 0→20 acelerado en el tag → descartado
+
+Si se proponen más animaciones, que sean muy sutiles. Hacer siempre rollback rápido si no convencen.
+
+**Rollback:** `git checkout <ultimo-commit-bueno> -- src/components/Intro.jsx src/App.css`
+Cuidado: el checkout puede sobrescribir texto aprobado en Intro.jsx — revisar la bajada tras el rollback.
 
 ---
 
 ## Pendiente
 
-- [ ] Configurar DNS: CNAME `test` → dominio de Vercel en panel de Linode
-- [ ] Implementar postMessage para comunicar altura del iframe al WordPress padre
-- [ ] Revisar contenido editorial: preguntas y perfiles son un primer borrador
+- [ ] DNS: CNAME `test` → dominio de Vercel en panel de Linode
+- [ ] postMessage para comunicar altura del iframe al WordPress padre
+- [ ] Revisión editorial completa de preguntas y perfiles
 - [ ] Revisar diseño en móvil
-- [ ] Añadir analytics (completions, distribución de eras, abandono)
+- [ ] Analytics (completions, distribución de eras, abandono)
+- [ ] Configurar `git config --global user.name/email` (commits salen con nombre del Mac)
 
 ---
 
-## Convenciones del Proyecto
+## Convenciones del proyecto
 
-- Todo el naming es en español (pantalla, respuestas, resultado, era, opciones...)
-- Sin dependencias adicionales — si algo se puede hacer con la API del browser, se hace así
-- No introducir TypeScript, CSS modules, ni librerías de estado sin consultarlo
-- Commits descriptivos, push solo con confirmación explícita
+- Naming en español (pantalla, respuestas, resultado, era, opciones...)
+- Sin dependencias adicionales — Canvas API nativa, Web Share API nativa
+- No introducir TypeScript, CSS modules ni librerías de estado sin consultarlo
+- Push solo con confirmación explícita de Sara ("haz push")

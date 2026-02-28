@@ -27,21 +27,6 @@ function calcularResultado(respuestas) {
   }
 }
 
-function calcularBreakdown(respuestas) {
-  const puntos = {}
-  respuestas.forEach((era) => {
-    puntos[era] = (puntos[era] || 0) + 1
-  })
-
-  return Object.entries(profiles)
-    .map(([key, profile]) => ({
-      key,
-      era: profile.era,
-      color: profile.color,
-      porcentaje: Math.round(((puntos[key] || 0) / respuestas.length) * 100),
-    }))
-    .sort((a, b) => b.porcentaje - a.porcentaje)
-}
 
 function App() {
   const preguntasBarajadas = useMemo(() => {
@@ -60,7 +45,6 @@ function App() {
   const [visible, setVisible] = useState(true)
   const [respuestas, setRespuestas] = useState([])
   const [resultado, setResultado] = useState(null)
-  const [breakdown, setBreakdown] = useState(null)
 
   const cambiarPantalla = useCallback((siguiente) => {
     setVisible(false)
@@ -81,7 +65,6 @@ function App() {
     if (nuevasRespuestas.length === preguntasBarajadas.length) {
       const eraGanadora = calcularResultado(nuevasRespuestas)
       setResultado(profiles[eraGanadora])
-      setBreakdown(calcularBreakdown(nuevasRespuestas))
       cambiarPantalla('analizando')
     }
   }
@@ -93,7 +76,6 @@ function App() {
   function handleReiniciar() {
     setRespuestas([])
     setResultado(null)
-    setBreakdown(null)
     cambiarPantalla('intro')
   }
 
@@ -114,7 +96,7 @@ function App() {
           <Analizando onListo={handleAnalizandoListo} />
         )}
         {pantalla === 'result' && resultado && (
-          <Result resultado={resultado} breakdown={breakdown} onReiniciar={handleReiniciar} />
+          <Result resultado={resultado} onReiniciar={handleReiniciar} />
         )}
       </div>
     </div>

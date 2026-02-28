@@ -1,8 +1,14 @@
+import { useEffect } from 'react'
+
 const LETRAS = ['A', 'B', 'C', 'D']
 
 function Quiz({ questions, respuestaActual, onResponder }) {
   const pregunta = questions[respuestaActual]
   if (!pregunta) return null
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [respuestaActual])
   const progreso = (respuestaActual / questions.length) * 100
 
   return (

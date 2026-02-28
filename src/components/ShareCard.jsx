@@ -27,10 +27,20 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   return currentY
 }
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 function ShareCard({ resultado }) {
   const [generando, setGenerando] = useState(false)
+  const [esViewportMovil, setEsViewportMovil] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handler = () => setEsViewportMovil(mq.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   async function generarCanvas() {
     await document.fonts.ready
@@ -88,29 +98,56 @@ function ShareCard({ resultado }) {
     return canvas
   }
 
+  async function obtenerBlob() {
+    const canvas = await generarCanvas()
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+  }
+
   async function handleCompartir() {
     setGenerando(true)
     try {
-      const canvas = await generarCanvas()
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+      const blob = await obtenerBlob()
       const file = new File([blob], `jenesaispop-${resultado.era}.png`, { type: 'image/png' })
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: '¿De qué año eres? — jenesaispop' })
       } else {
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.download = `jenesaispop-${resultado.era}.png`
-        link.href = url
-        link.click()
-        URL.revokeObjectURL(url)
+        descargarBlob(blob)
       }
     } finally {
       setGenerando(false)
     }
   }
 
+  async function handleDescargar() {
+    setGenerando(true)
+    try {
+      const blob = await obtenerBlob()
+      descargarBlob(blob)
+    } finally {
+      setGenerando(false)
+    }
+  }
+
+  function descargarBlob(blob) {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.download = `jenesaispop-${resultado.era}.png`
+    link.href = url
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   const tituloCompartir = resultado.titulo.replace(/^Eres/, 'Soy')
+  let puedeCompartirNativo = false
+  try {
+    if (navigator.canShare && esViewportMovil) {
+      const file = new File([], 'x.png', { type: 'image/png' })
+      puedeCompartirNativo = navigator.canShare({ files: [file] })
+    }
+  } catch {
+    // canShare no soportado o falló
+  }
 
   return (
     <div className="sharecard-wrap">
@@ -128,9 +165,17 @@ function ShareCard({ resultado }) {
           <span className="sharecard__url">jenesaispop.com</span>
         </div>
       </div>
-      <button className="btn-descargar" onClick={handleCompartir} disabled={generando}>
-        {generando ? 'Generando imagen...' : 'Compartir imagen'}
-      </button>
+      <div className="sharecard__acciones">
+        {puedeCompartirNativo ? (
+          <button className="btn-descargar" onClick={handleCompartir} disabled={generando}>
+            {generando ? 'Generando imagen...' : 'Compartir imagen'}
+          </button>
+        ) : (
+          <button className="btn-descargar" onClick={handleDescargar} disabled={generando}>
+            {generando ? 'Generando...' : 'Descargar imagen'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }

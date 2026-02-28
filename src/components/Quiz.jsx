@@ -2,6 +2,7 @@ const LETRAS = ['A', 'B', 'C', 'D']
 
 function Quiz({ questions, respuestaActual, onResponder }) {
   const pregunta = questions[respuestaActual]
+  if (!pregunta) return null
   const progreso = (respuestaActual / questions.length) * 100
 
   return (

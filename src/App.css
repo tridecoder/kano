@@ -4,6 +4,25 @@
   padding: 48px 24px 80px;
 }
 
+@keyframes pantallaEntrar {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pantallaSalir {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-16px); }
+}
+
+.pantalla--visible {
+  animation: pantallaEntrar 0.28s ease forwards;
+}
+
+.pantalla--saliendo {
+  animation: pantallaSalir 0.28s ease forwards;
+  pointer-events: none;
+}
+
 /* ── INTRO ── */
 .intro {
   padding: 0;

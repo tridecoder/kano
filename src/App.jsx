@@ -1,10 +1,12 @@
-import { useState } from 'react'                                                                                                                                                                                   
+import { useState, useCallback } from 'react'
 import { questions } from './data/questions'
-import { profiles } from './data/profiles'                                                                                                                                                                         
-import Intro from './components/Intro'                    
+import { profiles } from './data/profiles'
+import Intro from './components/Intro'
 import Quiz from './components/Quiz'
 import Result from './components/Result'
 import './App.css'
+
+const DURACION_TRANSICION = 280
 
 function calcularResultado(respuestas) {
   const puntos = {}
@@ -19,19 +21,27 @@ function calcularResultado(respuestas) {
 
   if (empates.length === 1) return empates[0]
 
-  // En caso de empate, gana la era del último voto emitido
   for (let i = respuestas.length - 1; i >= 0; i--) {
     if (empates.includes(respuestas[i])) return respuestas[i]
   }
 }
 
 function App() {
-  const [pantalla, setPantalla] = useState('intro') // 'intro' | 'quiz' | 'result'
+  const [pantalla, setPantalla] = useState('intro')
+  const [visible, setVisible] = useState(true)
   const [respuestas, setRespuestas] = useState([])
   const [resultado, setResultado] = useState(null)
 
+  const cambiarPantalla = useCallback((siguiente) => {
+    setVisible(false)
+    setTimeout(() => {
+      setPantalla(siguiente)
+      setVisible(true)
+    }, DURACION_TRANSICION)
+  }, [])
+
   function handleEmpezar() {
-    setPantalla('quiz')
+    cambiarPantalla('quiz')
   }
 
   function handleResponder(era) {
@@ -41,31 +51,33 @@ function App() {
     if (nuevasRespuestas.length === questions.length) {
       const eraGanadora = calcularResultado(nuevasRespuestas)
       setResultado(profiles[eraGanadora])
-      setPantalla('result')
+      cambiarPantalla('result')
     }
   }
 
   function handleReiniciar() {
     setRespuestas([])
     setResultado(null)
-    setPantalla('intro')
+    cambiarPantalla('intro')
   }
 
   return (
     <div className="app">
-      {pantalla === 'intro' && (
-        <Intro onEmpezar={handleEmpezar} />
-      )}
-      {pantalla === 'quiz' && (
-        <Quiz
-          questions={questions}
-          respuestaActual={respuestas.length}
-          onResponder={handleResponder}
-        />
-      )}
-      {pantalla === 'result' && (
-        <Result resultado={resultado} onReiniciar={handleReiniciar} />
-      )}
+      <div className={`pantalla ${visible ? 'pantalla--visible' : 'pantalla--saliendo'}`}>
+        {pantalla === 'intro' && (
+          <Intro onEmpezar={handleEmpezar} />
+        )}
+        {pantalla === 'quiz' && (
+          <Quiz
+            questions={questions}
+            respuestaActual={respuestas.length}
+            onResponder={handleResponder}
+          />
+        )}
+        {pantalla === 'result' && resultado && (
+          <Result resultado={resultado} onReiniciar={handleReiniciar} />
+        )}
+      </div>
     </div>
   )
 }

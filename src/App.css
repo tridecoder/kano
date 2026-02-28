@@ -205,7 +205,7 @@
 .quiz__letra {
   display: block;
   font-family: 'PT Sans', sans-serif;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -442,6 +442,18 @@
 .btn-descargar:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+.sharecard__acciones {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.sharecard__acciones .btn-descargar {
+  margin-top: 0;
 }
 
 /* ── COMPARTIR ── */

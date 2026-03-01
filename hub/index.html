@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jenesaispop — Apps</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #222222;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 3px solid #222222;
+      padding: 24px;
+    }
+
+    header a {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #222222;
+      text-decoration: none;
+    }
+
+    main {
+      flex: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 64px 24px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 48px;
+    }
+
+    .apps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border-top: 3px solid #222222;
+    }
+
+    .app-item {
+      display: block;
+      padding: 32px 0;
+      border-bottom: 1px solid #eaeaea;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .app-item:hover .app-item__titulo {
+      color: #f10547;
+    }
+
+    .app-item__tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #f10547;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .app-item__titulo {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      transition: color 0.15s ease;
+    }
+
+    .app-item__descripcion {
+      font-size: 15px;
+      color: #999;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="https://jenesaispop.com">jenesaispop.com</a>
+  </header>
+  <main>
+    <h1>Interactivos</h1>
+    <div class="apps">
+      <a href="/kano/" class="app-item">
+        <span class="app-item__tag">20 años de jenesaispop</span>
+        <p class="app-item__titulo">¿De qué año eres?</p>
+        <p class="app-item__descripcion">Descubre en qué época de jenesaispop encaja tu forma de escuchar música.</p>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

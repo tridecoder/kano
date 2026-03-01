@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/kano/assets/:path*", "destination": "/assets/:path*" },
+    { "source": "/kano/:path*",        "destination": "/index.html" },
+    { "source": "/",                   "destination": "/index.html" }
+  ]
+}

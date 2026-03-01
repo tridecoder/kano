@@ -1,7 +1,9 @@
 {
-  "rewrites": [
-    { "source": "/kano/assets/:path*", "destination": "/assets/:path*" },
-    { "source": "/kano/:path*",        "destination": "/index.html" },
-    { "source": "/",                   "destination": "/landing.html" }
+  "routes": [
+    { "src": "/kano/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/kano/(.*)",        "dest": "/index.html" },
+    { "src": "/kano",             "dest": "/index.html" },
+    { "src": "/",                 "dest": "/landing.html" },
+    { "src": "/(.*)",             "dest": "/$1" }
   ]
 }

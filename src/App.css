@@ -214,6 +214,21 @@
 }
 
 /* ── RESULT ── */
+@keyframes resultHeaderEntrar {
+  from { opacity: 0; transform: translateY(48px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes resultTituloEntrar {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes resultItemEntrar {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .result {
   padding: 0;
 }
@@ -223,6 +238,7 @@
   margin-bottom: 48px;
   position: relative;
   overflow: hidden;
+  animation: resultHeaderEntrar 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
 }
 
 .result__header::after {
@@ -244,6 +260,7 @@
   text-transform: uppercase;
   margin-bottom: 20px;
   color: rgba(255,255,255,0.75);
+  animation: resultItemEntrar 0.4s ease 0.3s both;
 }
 
 .result h1 {
@@ -251,6 +268,7 @@
   line-height: 1.1;
   letter-spacing: -1px;
   color: #ffffff;
+  animation: resultTituloEntrar 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
 }
 
 .result__descripcion {
@@ -258,6 +276,7 @@
   line-height: 1.8;
   margin-bottom: 40px;
   color: var(--negro);
+  animation: resultItemEntrar 0.4s ease 0.85s both;
 }
 
 /* ── ANALIZANDO ── */
@@ -300,6 +319,7 @@
   text-transform: uppercase;
   color: var(--rojo);
   margin-bottom: 16px;
+  animation: resultItemEntrar 0.4s ease 1.05s both;
 }
 
 .result__discos {
@@ -330,9 +350,9 @@
   animation: entrar 0.4s ease forwards;
 }
 
-.result__discos li:nth-child(1) { animation-delay: 0.1s; }
-.result__discos li:nth-child(2) { animation-delay: 0.25s; }
-.result__discos li:nth-child(3) { animation-delay: 0.4s; }
+.result__discos li:nth-child(1) { animation-delay: 1.15s; }
+.result__discos li:nth-child(2) { animation-delay: 1.3s; }
+.result__discos li:nth-child(3) { animation-delay: 1.45s; }
 
 .result__discos li::before {
   content: '▶';
@@ -344,6 +364,7 @@
 /* ── SHARE CARD ── */
 .sharecard-wrap {
   margin-bottom: 40px;
+  animation: resultItemEntrar 0.4s ease 1.65s both;
 }
 
 .sharecard-label {
@@ -493,6 +514,7 @@
   border-top: 3px solid var(--negro);
   padding-top: 32px;
   margin-bottom: 32px;
+  animation: resultItemEntrar 0.4s ease 1.8s both;
 }
 
 .result__compartir-titulo {
@@ -539,6 +561,7 @@
   gap: 16px;
   flex-wrap: wrap;
   margin-top: 24px;
+  animation: resultItemEntrar 0.4s ease 1.9s both;
 }
 
 .btn-foros {

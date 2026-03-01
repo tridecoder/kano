@@ -1,9 +1,10 @@
 {
   "routes": [
-    { "src": "/kano/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/kano/(.*)",        "dest": "/index.html" },
-    { "src": "/kano",             "dest": "/index.html" },
-    { "src": "/",                 "dest": "/landing.html" },
-    { "src": "/(.*)",             "dest": "/$1" }
+    { "src": "/kano/assets/(.*)",                  "dest": "/assets/$1" },
+    { "src": "/kano/(.*\\.(png|jpg|svg|ico|webp))", "dest": "/$1" },
+    { "src": "/kano/(.*)",                          "dest": "/index.html" },
+    { "src": "/kano",                               "dest": "/index.html" },
+    { "src": "/",                                   "dest": "/landing.html" },
+    { "src": "/(.*)",                               "dest": "/$1" }
   ]
 }

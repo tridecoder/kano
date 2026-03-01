@@ -62,9 +62,9 @@ function ShareCard({ resultado }) {
 
     // Logo (badge con fondo rojo propio)
     if (logo) {
-      const h = 52
+      const h = 80
       const w = (logo.naturalWidth / logo.naturalHeight) * h
-      ctx.drawImage(logo, 64, 60, w, h)
+      ctx.drawImage(logo, 64, 56, w, h)
     }
 
     // Tag top right

@@ -1,4 +1,4 @@
-const LOGO_URL = import.meta.env.BASE_URL + 'logo.png'
+const LOGO_URL = '/logo.png'
 
 function cargarLogo() {
   return new Promise((resolve) => {

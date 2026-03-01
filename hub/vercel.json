@@ -1,8 +1,0 @@
-{
-  "redirects": [
-    { "source": "/kano", "destination": "/kano/", "permanent": false }
-  ],
-  "rewrites": [
-    { "source": "/kano/:path*", "destination": "https://kano-black.vercel.app/kano/:path*" }
-  ]
-}

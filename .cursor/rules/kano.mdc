@@ -1,5 +1,5 @@
 ---
-description: Reglas para el proyecto kano — test ¿De qué año eres? de jenesaispop
+description: Reglas para el proyecto kano — ¿De qué año eres? de jenesaispop
 alwaysApply: true
 ---
 
@@ -8,7 +8,8 @@ alwaysApply: true
 Quiz interactivo para el 20 aniversario de jenesaispop.com. El usuario responde 11 preguntas sobre actitudes y hábitos musicales y obtiene el perfil de la era de jenesaispop con la que más encaja.
 
 **Stack:** React 18 + Vite · Sin dependencias adicionales · Desplegado en Vercel
-**URL destino:** `test.jenesaispop.com` (pendiente DNS en Linode) — por ahora `kano-black.vercel.app`
+**URL:** `app.jenesaispop.com/kano/` (DNS en Cloudflare → kano Vercel project)
+**URL hub:** `app.jenesaispop.com` → landing de interactivos (`public/landing.html`)
 **Repo:** github.com/tridecoder/kano
 **Deploy:** auto-deploy en Vercel en cada push a `main`
 **Integración futura:** iframe en jenesaispop.com con postMessage para ajustar altura
@@ -21,6 +22,7 @@ Quiz interactivo para el 20 aniversario de jenesaispop.com. El usuario responde 
 kano/
 ├── public/
 │   ├── logo.png          # Logo de jenesaispop (local para evitar CORS en Canvas)
+│   ├── landing.html      # Hub de interactivos — servido en app.jenesaispop.com/
 │   └── og.png            # OG image 1200×630 (excluida de git, generar con generate-og.html)
 ├── src/
 │   ├── App.jsx           # Máquina de estados principal
@@ -30,14 +32,67 @@ kano/
 │   │   ├── Intro.jsx      # Pantalla de inicio
 │   │   ├── Quiz.jsx       # Preguntas y opciones
 │   │   ├── Analizando.jsx # Pantalla intermedia de suspense entre quiz y resultado
-│   │   ├── Result.jsx     # Resultado + botones de compartir
+│   │   ├── Result.jsx     # Resultado + botones de compartir + botón de foros
 │   │   └── ShareCard.jsx  # Card visual + generación de imagen para Instagram
 │   └── data/
 │       ├── questions.js  # 11 preguntas, 4 opciones cada una
 │       └── profiles.js   # 5 perfiles de era con color, título, descripción y discos
 ├── index.html            # Meta OG, Twitter Card, favicon
+├── vite.config.js        # base: '/kano/' — imprescindible para el routing multi-app
+├── vercel.json           # Routing: /kano/* → SPA, / → landing.html
 └── generate-og.html      # Utilidad local para generar og.png (excluida de git)
 ```
+
+---
+
+## Arquitectura multi-app (app.jenesaispop.com)
+
+`app.jenesaispop.com` es el hub de interactivos de jenesaispop. El proyecto kano es el único Vercel project que gestiona todo el dominio.
+
+### vite.config.js
+
+```js
+export default defineConfig({
+  plugins: [react()],
+  base: '/kano/',  // ← imprescindible, no borrar
+})
+```
+
+`base: '/kano/'` hace que todos los assets del build se referencien como `/kano/assets/...`. Sin esto, el routing de Vercel no puede distinguir los assets del SPA de los de otras apps.
+
+### vercel.json
+
+```json
+{
+  "routes": [
+    { "src": "/kano/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/kano/(.*)",        "dest": "/index.html" },
+    { "src": "/kano",             "dest": "/index.html" },
+    { "src": "/",                 "dest": "/landing.html" },
+    { "src": "/(.*)",             "dest": "/$1" }
+  ]
+}
+```
+
+**Importante:** usar `routes` (no `rewrites`). Los `rewrites` en Vercel se procesan después del filesystem, por lo que `index.html` tomaría precedencia sobre `landing.html` en `/`. Los `routes` se procesan antes.
+
+### Logo en ShareCard
+
+`LOGO_URL` debe ser `/logo.png` (hardcodeado), NO `import.meta.env.BASE_URL + 'logo.png'`. La catch-all de Vercel sirve `/logo.png` directamente del filesystem. Si se usa BASE_URL, genera `/kano/logo.png` que cae en la regla del SPA y devuelve HTML.
+
+```js
+const LOGO_URL = '/logo.png'  // ← así, no con BASE_URL
+```
+
+### Para añadir una nueva app
+
+1. Crear nuevo repo/carpeta con su propio Vite + `base: '/nueva-app/'`
+2. Desplegar como nuevo proyecto en Vercel (con su propio dominio `nueva-app-xxx.vercel.app`)
+3. Añadir reglas en `vercel.json` de kano (este proyecto):
+   ```json
+   { "src": "/nueva-app/assets/(.*)", "dest": "PENDIENTE — proxy externo no funciona en Vercel hobby" }
+   ```
+   **Nota:** el plan gratuito de Vercel no soporta proxy a URLs externas en `rewrites`/`routes`. La arquitectura multi-app en un solo proyecto (con todo en el mismo repo) es la alternativa si se necesitan más apps.
 
 ---
 
@@ -120,6 +175,7 @@ if (!pregunta) return null  // ← necesario, no borrar
 
 - 11 preguntas con 4 opciones cada una
 - Las preguntas son de actitud, no de trivia musical
+- Tono PopJustice: directo, con opinión, específico, sin poses
 - Cada opción mapea a una de las 5 eras (no todas las eras aparecen en cada pregunta)
 - El orden de las opciones en el archivo no importa — se barajan al cargar con Fisher-Yates
 
@@ -139,6 +195,13 @@ Keys: `"2006-2008"` · `"2009-2012"` · `"2013-2016"` · `"2017-2020"` · `"2021
   color: String         // hex, fondo del header y sharecard
 }
 ```
+
+**Títulos actuales:**
+- `2006-2008` → "Eres de cuando todo esto era un campo"
+- `2009-2012` → "Eres de la edad de oro, y lo defenderás hasta el final"
+- `2013-2016` → "Eres de la era de la ansiedad musical"
+- `2017-2020` → "Eres de cuando admitir que te gustaba el pop era un acto político"
+- `2021-2025` → "Eres del presente, que tampoco está tan mal"
 
 **Colores de era:**
 - `2006-2008` → `#f10547` (rojo corporativo)
@@ -202,6 +265,26 @@ Pantalla intermedia que aparece entre el quiz y el resultado para crear suspense
 - Al terminar llama a `onListo` → `cambiarPantalla('result')`
 - `useEffect` con deps `[]` — correcto porque `onListo` es estable (`useCallback` en App.jsx)
 
+---
+
+## Reveal del resultado (Result.jsx + App.css)
+
+El resultado se revela con animaciones en cascada. Secuencia:
+
+- `t=0.1s` — `.result__header` sube desde abajo (`resultHeaderEntrar`, cubic-bezier snappy)
+- `t=0.3s` — `.result__era` aparece
+- `t=0.5s` — `.result h1` entra con escala + slide (`resultTituloEntrar`) — momento de más impacto
+- `t=0.85s` — `.result__descripcion`
+- `t=1.05s` — `.result__discos-titulo`
+- `t=1.15-1.45s` — discos en cascada (li nth-child)
+- `t=1.65s` — `.sharecard-wrap`
+- `t=1.8s` — `.result__compartir`
+- `t=1.9s` — `.result__acciones`
+
+Todos usan `animation-fill-mode: both` (vía shorthand) para que el elemento empiece invisible durante el delay.
+
+---
+
 ## Compartir imagen (ShareCard.jsx)
 
 Genera una imagen 1080×1080 con Canvas API nativo (sin html2canvas).
@@ -209,18 +292,34 @@ Genera una imagen 1080×1080 con Canvas API nativo (sin html2canvas).
 **Flujo:**
 1. `document.fonts.ready` — espera a que PT Sans esté cargada
 2. Carga `/logo.png` desde local (el servidor de jenesaispop no tiene cabeceras CORS)
-3. Dibuja: fondo de color de era → comilla decorativa → logo → era → título → descripción → URL
+3. Dibuja: fondo de color de era → comilla decorativa → logo (80px alto) → era → título → descripción → URL
 4. El título cambia "Eres" → "Soy" (`resultado.titulo.replace(/^Eres/, 'Soy')`)
 5. En móvil con `navigator.canShare({ files })`: botón "Compartir imagen" → share nativo
 6. En desktop o sin soporte: botón "Descargar imagen" → descarga PNG
 
 La detección de móvil usa `window.matchMedia('(max-width: 768px)')` con listener para cambios.
 
+**`LOGO_URL = '/logo.png'`** — hardcodeado, no usar `import.meta.env.BASE_URL`. Ver sección de arquitectura.
+
+---
+
+## Botón de foros (Result.jsx)
+
+Al final de `.result__acciones`, antes del botón de repetir:
+
+```jsx
+<a href="https://jenesaispop.com/foros" target="_blank" rel="noopener noreferrer" className="btn-foros">
+  Coméntalo en los foros
+</a>
+```
+
+**TODO:** actualizar la URL con la URL real de Flarum.
+
 ---
 
 ## Open Graph
 
-`index.html` tiene meta OG y Twitter Card apuntando a `https://test.jenesaispop.com/og.png`.
+`index.html` tiene meta OG y Twitter Card apuntando a `https://app.jenesaispop.com/kano/og.png`.
 
 Para regenerar `og.png`:
 1. Arrancar el servidor de desarrollo
@@ -235,8 +334,8 @@ Para regenerar `og.png`:
 **La intro está sin animación por decisión activa de Sara.**
 
 Propuestas rechazadas:
-- ❌ Slot machine de años en el h1 + flash de colores de fondo → descartado
-- ❌ Contador 0→20 acelerado en el tag → descartado
+- ❌ Slot machine de años en el h1 + flash de colores de fondo → "es horrible"
+- ❌ Contador 0→20 acelerado en el tag → "no me gusta"
 
 Si se proponen más animaciones, que sean muy sutiles. Hacer siempre rollback rápido si no convencen.
 
@@ -247,10 +346,9 @@ Cuidado: el checkout puede sobrescribir texto aprobado en Intro.jsx — revisar 
 
 ## Pendiente
 
-- [ ] DNS: CNAME `test` → dominio de Vercel en panel de Linode
+- [ ] URL real de los foros de Flarum (actualizar botón en Result.jsx)
 - [ ] postMessage para comunicar altura del iframe al WordPress padre
-- [ ] Revisión editorial completa de preguntas y perfiles
-- [ ] Revisar diseño en móvil
+- [ ] og.png regenerar con nueva URL (app.jenesaispop.com/kano/)
 - [ ] Analytics (completions, distribución de eras, abandono)
 - [ ] Configurar `git config --global user.name/email` (commits salen con nombre del Mac)
 

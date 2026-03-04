@@ -1,4 +1,4 @@
-const LOGO_URL = '/logo.png'
+const LOGO_URL = import.meta.env.BASE_URL + 'logo.png'
 
 function cargarLogo() {
   return new Promise((resolve) => {
@@ -71,7 +71,7 @@ function ShareCard({ resultado }) {
     ctx.font = 'bold 22px "PT Sans", sans-serif'
     ctx.fillStyle = 'rgba(255,255,255,0.6)'
     ctx.textAlign = 'right'
-    ctx.fillText('¿DE QUÉ AÑO ERES?', 1016, 100)
+    ctx.fillText('¿DE QUÉ ÉPOCA ERES?', 1016, 100)
     ctx.textAlign = 'left'
 
     // Era
@@ -154,7 +154,7 @@ function ShareCard({ resultado }) {
       <div className="sharecard" style={{ backgroundColor: resultado.color }}>
         <div className="sharecard__top">
           <img src={LOGO_URL} className="sharecard__logo-img" alt="jenesaispop" />
-          <span className="sharecard__tag">¿De qué año eres?</span>
+          <span className="sharecard__tag">¿De qué época eres?</span>
         </div>
         <div className="sharecard__centro">
           <p className="sharecard__era">{resultado.era}</p>

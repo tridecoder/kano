@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
 const LETRAS = ['A', 'B', 'C', 'D']
-
 function Quiz({ questions, respuestaActual, onResponder }) {
   const pregunta = questions[respuestaActual]
   if (!pregunta) return null
@@ -33,7 +32,10 @@ function Quiz({ questions, respuestaActual, onResponder }) {
         <ul className="quiz__opciones">
           {pregunta.opciones.map((opcion, i) => (
             <li key={i}>
-              <button className="quiz__opcion" onClick={() => onResponder(opcion.era)}>
+              <button
+                className="quiz__opcion"
+                onClick={() => onResponder(opcion.era)}
+              >
                 <span className="quiz__letra">{LETRAS[i]}</span>
                 {opcion.texto}
               </button>

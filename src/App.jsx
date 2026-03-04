@@ -45,6 +45,7 @@ function App() {
   const [visible, setVisible] = useState(true)
   const [respuestas, setRespuestas] = useState([])
   const [resultado, setResultado] = useState(null)
+  const [flood, setFlood] = useState({ visible: false, color: null, saliendo: false })
 
   const cambiarPantalla = useCallback((siguiente) => {
     setVisible(false)
@@ -70,8 +71,19 @@ function App() {
   }
 
   const handleAnalizandoListo = useCallback(() => {
-    cambiarPantalla('result')
-  }, [cambiarPantalla])
+    setFlood({ visible: true, color: resultado.color, saliendo: false })
+    setVisible(false)
+    setTimeout(() => {
+      setPantalla('result')
+      setVisible(true)
+    }, DURACION_TRANSICION)
+    setTimeout(() => {
+      setFlood(f => ({ ...f, saliendo: true }))
+    }, 750)
+    setTimeout(() => {
+      setFlood({ visible: false, color: null, saliendo: false })
+    }, 1150)
+  }, [resultado])
 
   function handleReiniciar() {
     setRespuestas([])
@@ -81,6 +93,12 @@ function App() {
 
   return (
     <div className="app">
+{flood.visible && (
+        <div
+          className={`flood-overlay ${flood.saliendo ? 'flood-overlay--saliendo' : 'flood-overlay--entrando'}`}
+          style={{ backgroundColor: flood.color }}
+        />
+      )}
       <div className={`pantalla ${visible ? 'pantalla--visible' : 'pantalla--saliendo'}`}>
         {pantalla === 'intro' && (
           <Intro onEmpezar={handleEmpezar} />

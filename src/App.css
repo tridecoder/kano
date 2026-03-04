@@ -2,6 +2,34 @@
   max-width: 720px;
   margin: 0 auto;
   padding: 48px 24px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes floodEntrar {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes floodSalir {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.flood-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  transform-origin: bottom;
+  pointer-events: none;
+}
+
+.flood-overlay--entrando {
+  animation: floodEntrar 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.flood-overlay--saliendo {
+  animation: floodSalir 0.4s ease forwards;
 }
 
 @keyframes pantallaEntrar {
@@ -42,15 +70,33 @@
 }
 
 .intro h1 {
-  font-size: clamp(48px, 10vw, 80px);
-  line-height: 0.95;
-  letter-spacing: -2px;
+  display: flex;
+  flex-direction: column;
   margin-bottom: 24px;
+  gap: 0;
+  line-height: 1;
 }
 
-.intro h1 em {
+.intro__h1-pequeno {
+  font-size: clamp(28px, 6vw, 52px);
+  font-weight: 700;
+  color: var(--negro);
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.intro__h1-jnsp {
   font-style: italic;
   color: var(--rojo);
+}
+
+.intro__h1-eres {
+  font-size: clamp(52px, 12vw, 96px);
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rojo);
+  letter-spacing: -3px;
+  line-height: 0.9;
 }
 
 .intro__bajada {

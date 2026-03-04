@@ -3,7 +3,7 @@ description: Reglas para el proyecto kano — ¿De qué año eres? de jenesaispo
 alwaysApply: true
 ---
 
-# kano — ¿De qué año eres?
+# kano — ¿De qué época de jenesaispop eres?
 
 Quiz interactivo para el 20 aniversario de jenesaispop.com. El usuario responde 11 preguntas sobre actitudes y hábitos musicales y obtiene el perfil de la era de jenesaispop con la que más encaja.
 
@@ -78,10 +78,10 @@ export default defineConfig({
 
 ### Logo en ShareCard
 
-`LOGO_URL` debe ser `/logo.png` (hardcodeado), NO `import.meta.env.BASE_URL + 'logo.png'`. La catch-all de Vercel sirve `/logo.png` directamente del filesystem. Si se usa BASE_URL, genera `/kano/logo.png` que cae en la regla del SPA y devuelve HTML.
+`LOGO_URL` usa `import.meta.env.BASE_URL + 'logo.png'`. En dev genera `/kano/logo.png` que Vite sirve correctamente desde `public/`. En producción, la segunda regla de `vercel.json` redirige `/kano/logo.png` → `/logo.png`.
 
 ```js
-const LOGO_URL = '/logo.png'  // ← así, no con BASE_URL
+const LOGO_URL = import.meta.env.BASE_URL + 'logo.png'  // ← así
 ```
 
 ### Para añadir una nueva app
@@ -106,6 +106,7 @@ const [pantalla, setPantalla]     // 'intro' | 'quiz' | 'analizando' | 'result'
 const [visible, setVisible]       // controla la animación de transición
 const [respuestas, setRespuestas] // array de era keys según el usuario responde
 const [resultado, setResultado]   // objeto del perfil ganador (de profiles.js)
+const [flood, setFlood]           // { visible, color, saliendo } — animación flood al revelar resultado
 ```
 
 ### Barajado de opciones
@@ -135,7 +136,13 @@ Al Quiz se le pasa `preguntasBarajadas`, no `questions` directamente.
 1. `setVisible(false)` → pantalla actual hace fade out (280ms)
 2. Después de 280ms: `setPantalla(siguiente)` + `setVisible(true)` → nueva pantalla hace fade in
 
-**Flujo al terminar el quiz:** `setResultado` se llama inmediatamente, luego `cambiarPantalla('analizando')`. La pantalla de análisis espera ~1.8s y llama a `onListo` → `cambiarPantalla('result')`.
+**Flujo al terminar el quiz:** `setResultado` se llama inmediatamente, luego `cambiarPantalla('analizando')`. La pantalla de análisis espera ~1.8s y llama a `onListo` → animación flood → `cambiarPantalla('result')`.
+
+**Animación flood (al revelar resultado):** `handleAnalizandoListo` arranca una animación de flood de color que cubre el viewport de abajo arriba antes de mostrar el resultado:
+- `t=0`: overlay fixed con el color de la era, animación `scaleY` 0→1 desde abajo (0.75s)
+- `t=280ms`: `setPantalla('result')` (el resultado aparece bajo el overlay)
+- `t=750ms`: el overlay empieza a desvanecerse (0.4s)
+- `t=1150ms`: overlay eliminado del DOM
 
 **Regla crítica:** `setResultado` debe llamarse **antes** de `cambiarPantalla`, nunca dentro del setTimeout:
 
@@ -254,6 +261,25 @@ Los 4 colores de opción se asignan por `nth-child`, no por clase:
 
 ---
 
+## Intro (Intro.jsx)
+
+Tipografía de póster, sin animaciones. Estructura del h1:
+
+```jsx
+<h1>
+  <span className="intro__h1-pequeno">¿De qué época de <em className="intro__h1-jnsp">jenesaispop</em></span>
+  <em className="intro__h1-eres">eres?</em>
+</h1>
+```
+
+- `.intro__h1-pequeno` — tamaño medio, negro, bold
+- `.intro__h1-jnsp` — italic rojo (igual que `.intro__h1-eres`)
+- `.intro__h1-eres` — grande (~96px), italic, rojo, letter-spacing negativo
+
+**Decisión activa:** sin animaciones en la intro. Ver sección "Animaciones en la intro".
+
+---
+
 ## Pantalla Analizando (Analizando.jsx)
 
 Pantalla intermedia que aparece entre el quiz y el resultado para crear suspense.
@@ -299,7 +325,9 @@ Genera una imagen 1080×1080 con Canvas API nativo (sin html2canvas).
 
 La detección de móvil usa `window.matchMedia('(max-width: 768px)')` con listener para cambios.
 
-**`LOGO_URL = '/logo.png'`** — hardcodeado, no usar `import.meta.env.BASE_URL`. Ver sección de arquitectura.
+**`LOGO_URL = import.meta.env.BASE_URL + 'logo.png'`** — Ver sección de arquitectura.
+
+El texto del tag superior es "¿De qué época eres?" (tanto en la card visual como en el canvas de descarga).
 
 ---
 
